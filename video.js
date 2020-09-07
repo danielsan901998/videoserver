@@ -1,3 +1,4 @@
+#!/usr/bin/node
 const http = require('http');
 const fs = require('fs');
 const html = fs.readFileSync(__dirname+'/video.html', "utf-8")
