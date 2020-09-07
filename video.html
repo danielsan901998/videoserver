@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{path}</title>
+<style>
+html,body { 
+ height: 100%;
+ width: 100%;
+ margin: 0;
+}
+video{
+ float:left;
+ height: 100%;
+ max-width: 84.5%;
+}
+#input {width: 20%}
+#right {
+ float:right;
+ width: 15.5%;
+}
+</style>
+</head>
+<body>
+<video id="video" autoplay type="video/mp4" src="{path}/0.mp4"></video>
+<div id="right">
+ <button id="atras">Atras</button>
+ <input type="number" value=2 step=0.1 id="input">
+ <button id="siguiente">Siguiente</button>
+ <button id="-">-5</button>
+ <button id="+">+5</button>
+ <button id="descargar">Descargar</button>
+ <ul id="dir">{dir}</ul>
+</div>
+<script>
+//variables
+var video = document.getElementById("video");
+var input = document.getElementById('input');
+var atras = document.getElementById('atras');
+var siguiente = document.getElementById('siguiente');
+var restar = document.getElementById('-');
+var sumar = document.getElementById('+');
+var dir = document.getElementById('dir');
+var descargar = document.getElementById('descargar');
+var track = 0;
+//functions
+function speed(valor) { 
+ video.playbackRate=valor
+}
+function next(i){
+ track=track+i
+ if(track<0)track=0
+ location.hash=track
+ video.src=location.origin+location.pathname+"/"+track+".mp4"
+ speed(input.value)
+ video.play()
+ if ('mediaSession' in navigator) {
+  setTimeout(capture,1000);
+  navigator.mediaSession.metadata = new MediaMetadata({
+   title: dir.children[track].innerText
+  });
+ }
+}
+function fullscreen() {
+ if(document.fullscreenElement){
+  document.exitFullscreen();
+ }
+ else{
+  video.requestFullscreen();
+ }
+}
+function capture() {
+	var video = document.getElementById('video');
+	if(video.videoWidth){
+		document.body.append(document.createElement("canvas"))
+		var canvas = document.getElementsByTagName('canvas')[0];     
+		canvas.width = video.videoWidth;
+		canvas.height = video.videoHeight;
+		canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);  
+		canvas.toBlob(blob => {
+		  var img = new Image();
+		  img.src = window.URL.createObjectURL(blob);
+		  img.sizes=video.videoWidth+"x"+video.videoHeight;
+		  navigator.mediaSession.metadata = new MediaMetadata({
+		   title: dir.children[track].innerText,
+		   artwork: [img]
+		  });
+		});
+		canvas.remove()
+	}
+}
+speed(input.value);
+//listeners
+video.onclick = event => {if (event.detail === 2) fullscreen()}
+video.onended = function() {
+ next(1);
+};
+input.addEventListener('input', function (evt) {
+ speed(this.value);
+});
+atras.addEventListener('click', function (evt) {
+ next(-1);
+});
+siguiente.addEventListener('click', function (evt) {
+ next(1);
+});
+restar.addEventListener('click', function (evt) {
+ video.currentTime=video.currentTime-5
+});
+sumar.addEventListener('click', function (evt) {
+ video.currentTime=video.currentTime+5
+});
+descargar.addEventListener('click', function (evt) {
+ descargar.disabled=true
+ var xhr = new XMLHttpRequest();
+ xhr.open('GET', video.src, true);
+ xhr.responseType = 'blob';
+ xhr.onprogress = e => descargar.textContent=((e.loaded/xhr.getResponseHeader("Content-Length"))*100).toFixed(0)+"%"
+ xhr.onload = function(e) {
+  if (this.status == 200) {
+   var myBlob = this.response;
+   var vid = (window.webkitURL || window.URL).createObjectURL(myBlob);
+   var video = document.getElementById("video");
+   video.src = vid;
+   descargar.disabled=false
+   descargar.textContent="Descargar";
+   speed(input.value)
+  }
+ }
+ xhr.send();
+});
+dir.addEventListener('click', function (ev) {
+ ev.preventDefault();
+ var href=ev.target.href
+ var num=href.substring(href.lastIndexOf("/")+1)
+ num=num.substring(0,num.lastIndexOf(".mp4"))
+ track=parseInt(num)
+ location.hash=num
+ video.setAttribute("src",href)
+ speed(input.value)
+ if ('mediaSession' in navigator) {
+  setTimeout(capture,1000);
+  navigator.mediaSession.metadata = new MediaMetadata({
+   title: dir.children[track].innerText
+  });
+ }
+});
+window.onpopstate = function(event) {
+ var href=location.hash.substr(1)
+ if(href=="")href="0"
+ track=parseInt(href)
+ var src=video.src
+ var url=src.substring(0,src.lastIndexOf("/")+1)
+ video.setAttribute("src",url+href+".mp4")
+ speed(input.value)
+ if ('mediaSession' in navigator) {
+  setTimeout(capture,1000);
+  navigator.mediaSession.metadata = new MediaMetadata({
+   title: dir.children[track].innerText
+  });
+ }
+};
+window.onkeydown = function(e) {
+ switch(e.keyCode){
+  case 32: //espacio
+   if(video.paused) video.play()
+   else video.pause()
+   break;
+  case 37: //left 
+   video.currentTime=video.currentTime-5
+   break;
+  case 38: //up 
+   input.value=(parseFloat(input.value)+0.1).toFixed(1)
+   speed(input.value);
+   break;
+  case 39: //right
+   video.currentTime=video.currentTime+5
+   break;
+  case 40: //down
+   input.value=(parseFloat(input.value)-0.1).toFixed(1)
+   speed(input.value);
+   break;
+  case 70: //F
+   fullscreen()
+   break;
+ }
+};
+if ('mediaSession' in navigator) {
+ setTimeout(capture,1000);
+ navigator.mediaSession.metadata = new MediaMetadata({
+  title: dir.children[track].innerText
+ });
+ navigator.mediaSession.setActionHandler('previoustrack', function() {
+  // User clicked "Previous Track" media notification icon.
+  next(-1)
+ });
+ navigator.mediaSession.setActionHandler('nexttrack', function() {
+  // User clicked "Next Track" media notification icon.
+  next(1);
+ });
+ navigator.mediaSession.setActionHandler('seekbackward', function() {
+  // User clicked "Seek Backward" media notification icon.
+  video.currentTime=video.currentTime-5
+ });
+ navigator.mediaSession.setActionHandler('seekforward', function() {
+  // User clicked "Seek Forward" media notification icon.
+  video.currentTime=video.currentTime+5
+ });
+}
+//mobile
+if(navigator.userAgent.indexOf("Android")>-1){
+ document.head.removeChild(document.getElementsByTagName("style")[0])
+ video.controls=true
+}
+window.screen.orientation.addEventListener('change', function() {
+ if(document.fullscreenElement){
+  if (window.matchMedia("(orientation: landscape)").matches) {
+   document.exitFullscreen();
+  }
+ }
+ else{
+  if (window.matchMedia("(orientation: portrait)").matches) {
+   video.requestFullscreen();
+  }
+ }
+});
+</script>
+</body>
+</html>
