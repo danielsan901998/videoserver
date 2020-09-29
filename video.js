@@ -144,3 +144,8 @@ https.createServer(options,function (req, res) {
             break;
     }
 }).listen(443);
+var http = require('http');
+http.createServer(function (req, res) {
+    res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+    res.end();
+}).listen(80);
