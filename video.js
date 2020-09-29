@@ -1,5 +1,4 @@
-#!/usr/bin/node
-const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const html = fs.readFileSync(__dirname+'/video.html', "utf-8")
 const img = fs.readFileSync(__dirname+'/favicon.ico');
@@ -12,7 +11,11 @@ function compare(a,b) {
         return 1;
     return 0;
 }
-http.createServer(function (req, res) {
+const options = {
+  key: fs.readFileSync('C:\\Users\\danig\\Google Drive\\scripts\\js\\https\\key.pem'),
+  cert: fs.readFileSync('C:\\Users\\danig\\Google Drive\\scripts\\js\\https\\cert.pem')
+};
+https.createServer(options,function (req, res) {
     var path = decodeURI(req.url);
     switch(path){
         case '/favicon.ico':
@@ -95,7 +98,7 @@ http.createServer(function (req, res) {
                         });
                     }
                     else{
-                        console.log(path)
+                        console.log(path+"/"+video)
                         res.writeHead(404, {"Content-Type": "text/html"});
                         res.write("<h1 align='center'>404 Not Found</h1>");
                         res.end();
@@ -140,4 +143,4 @@ http.createServer(function (req, res) {
             }
             break;
     }
-}).listen(80);
+}).listen(443);
