@@ -121,9 +121,11 @@ descargar.addEventListener('click', function (evt) {
    var myBlob = this.response;
    var vid = (window.webkitURL || window.URL).createObjectURL(myBlob);
    var video = document.getElementById("video");
+   var time = video.currentTime
    video.src = vid;
    descargar.disabled=false
    descargar.textContent="Descargar";
+   video.currentTime=time;
    speed(input.value)
   }
  }
