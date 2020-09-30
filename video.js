@@ -12,8 +12,8 @@ function compare(a,b) {
     return 0;
 }
 const options = {
-  key: fs.readFileSync('C:\\Users\\danig\\Google Drive\\scripts\\js\\https\\key.pem'),
-  cert: fs.readFileSync('C:\\Users\\danig\\Google Drive\\scripts\\js\\https\\cert.pem')
+    key: fs.readFileSync(__dirname+'/key.pem'),
+    cert: fs.readFileSync(__dirname+'/cert.pem')
 };
 https.createServer(options,function (req, res) {
     var path = decodeURI(req.url);
@@ -70,7 +70,7 @@ https.createServer(options,function (req, res) {
                                     var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
                                     var chunksize = (end - start) + 1;
                                     if(start>end){
-										// 416 Wrong range
+                                        // 416 Wrong range
                                         console.log(path)
                                         console.log(range)
                                         res.writeHead(416, {"Content-Type": "text/html"});
@@ -144,3 +144,8 @@ https.createServer(options,function (req, res) {
             break;
     }
 }).listen(443);
+var http = require('http');
+http.createServer(function (req, res) {
+    res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+    res.end();
+}).listen(80);
