@@ -26,6 +26,7 @@ https.createServer(options,function (req, res) {
             break;
         case '/':
             var a=fs.readdirSync(__dirname)
+            a=a.filter(file=>(file.indexOf(".")!=0))
             a=a.filter(file=>fs.statSync(__dirname+"/"+file).isDirectory())
             for(let i=0;i<a.length;i++){
                 if(!folders["/"+a[i]])folders["/"+a[i]]=[]
