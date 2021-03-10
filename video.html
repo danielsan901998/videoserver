@@ -4,20 +4,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{path}</title>
 <style>
-html,body { 
- height: 100%;
- width: 100%;
- margin: 0;
-}
-video{
- float:left;
- height: 100%;
- max-width: 84.5%;
-}
-#input {width: 20%}
-#right {
- float:right;
- width: 15.5%;
+@media (prefers-color-scheme: dark) {
+  body {
+    color: white;
+    background: black;
+  }
+  input {
+    background-color: black;
+    color: white;
+  }
+  button {
+    background-color: black;
+    color: white;
+  }
 }
 </style>
 </head>
@@ -42,6 +41,7 @@ const restar = document.getElementById('-');
 const sumar = document.getElementById('+');
 const dir = document.getElementById('dir');
 const descargar = document.getElementById('descargar');
+const right = document.getElementById('right');
 var track = 0;
 //functions
 function speed(valor) { 
@@ -115,7 +115,7 @@ descargar.addEventListener('click', function (evt) {
  var xhr = new XMLHttpRequest();
  xhr.open('GET', video.src, true);
  xhr.responseType = 'blob';
- xhr.onprogress = e => descargar.textContent=((e.loaded/xhr.getResponseHeader("Content-Length"))*100).toFixed(0)+"%"
+ xhr.onprogress = e => descargar.textContent=((e.loaded/xhr.getResponseHeader("Content-Length"))*100).toFixed(2)+"%"
  xhr.onload = function(e) {
   if (this.status == 200) {
    var myBlob = this.response;
@@ -211,8 +211,38 @@ if ('mediaSession' in navigator) {
 }
 //mobile
 if(navigator.userAgent.indexOf("Android")>-1){
- document.head.removeChild(document.getElementsByTagName("style")[0])
+ var css=`
+video{
+ width: 100%;
+}`;
+ var head = document.head || document.getElementsByTagName('head')[0];
+ var style = document.createElement('style');
+ head.appendChild(style);
+ style.appendChild(document.createTextNode(css));
  video.controls=true
+}
+else{
+ var css=`
+ html,body { 
+ height: 100%;
+ width: 100%;
+ margin: 0;
+ overflow-x: hidden;
+}
+video{
+ float:left;
+ height: 100%;
+ max-width: 84.5%;
+}
+#input {width: 20%}
+#right {
+ float:right;
+ width: 15.5%;
+}`;
+ var head = document.head || document.getElementsByTagName('head')[0];
+ var style = document.createElement('style');
+ head.appendChild(style);
+ style.appendChild(document.createTextNode(css));
 }
 window.screen.orientation.addEventListener('change', function() {
  if(document.fullscreenElement){
