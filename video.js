@@ -3,7 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const html = fs.readFileSync(__dirname+'/video.html', "utf-8")
 const img = fs.readFileSync(__dirname+'/favicon.ico');
-const index='<!DOCTYPE html>\n<html>\n<head>\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n</head>\n<body>\n<ul>\n{dir}\n</ul>\n</body>\n</html>'
+const index='<!DOCTYPE html>\n<html>\n<head>\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<style>body {color: white;background: black;}</style></head>\n<body>\n<ul>\n{dir}\n</ul>\n</body>\n</html>'
 var folders={}
 function compare(a,b) {
     if (a.size < b.size)
