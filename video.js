@@ -36,7 +36,7 @@ function root(res,path){
     res.write(index.replace(/{path}/g,path.substr(1)).replace("{dir}",dir));
     res.end();
 }
-function main(res,path){
+function main(req,res,path){
     if(path.indexOf(".")!=-1){
         var i=path.lastIndexOf("/")
         var video=path.substr(i+1)
@@ -150,7 +150,7 @@ https.createServer(options,function (req, res) {
             root(res,path)
             break;
         default:
-            main(res,path)
+            main(req,res,path)
             break;
     }
 }).listen(443);
