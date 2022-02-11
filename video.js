@@ -22,19 +22,20 @@ function favicon(res){
     res.end();
 }
 function root(res,path){
-    var a=fs.readdirSync(__dirname)
-    a=a.filter(file=>(file.indexOf(".")!=0))
-    a=a.filter(file=>fs.statSync(__dirname+"/"+file).isDirectory())
-    for(let i=0;i<a.length;i++){
-        if(!folders["/"+a[i]])folders["/"+a[i]]=[]
-    }
-    var dir="";
-    for(i=0;i<a.length;i++){
-        dir+="<li><A href='"+a[i].replace(/ /g,"_")+"'>"+a[i]+"</A></li>\n";
-    }
-    res.writeHead(200, {'Content-Type': 'text/html;charset=utf-8'});
-    res.write(index.replace(/{path}/g,path.substr(1)).replace("{dir}",dir));
-    res.end();
+    fs.readdir(__dirname,(err,files)=>{
+        files=files.filter(file=>(file.indexOf(".")!=0))
+        files=files.filter(file=>fs.statSync(__dirname+"/"+file).isDirectory())
+        for(let i=0;i<files.length;i++){
+            if(!folders["/"+files[i]])folders["/"+files[i]]=[]
+        }
+        var dir="";
+        for(i=0;i<files.length;i++){
+            dir+="<li><A href='"+files[i].replace(/ /g,"_")+"'>"+files[i]+"</A></li>\n";
+        }
+        res.writeHead(200, {'Content-Type': 'text/html;charset=utf-8'});
+        res.write(index.replace(/{path}/g,path.substr(1)).replace("{dir}",dir));
+        res.end();
+    })
 }
 function main(req,res,path){
     if(path.indexOf(".")!=-1){
@@ -57,10 +58,11 @@ function main(req,res,path){
                     else{
                         var range = req.headers.range;
                         if (!range) {
-                            var file=fs.readFileSync(__dirname+path)
-                            res.writeHead(200, {"Content-Type": "video/mp4","Content-Length":Buffer.byteLength(file)});
-                            res.write(file);
-                            res.end();
+                            var file=fs.readFile(__dirname+path,(err,data)=>{
+                                res.writeHead(200, {"Content-Type": "video/mp4","Content-Length":Buffer.byteLength(data)});
+                                res.write(data);
+                                res.end();
+                            })
                         }
                         else{
                             var positions = range.replace(/bytes=/, "").split("-");
