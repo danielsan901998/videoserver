@@ -43,70 +43,65 @@ function main(req,res,path){
         var video=path.substr(i+1)
         video=parseInt(video.substring(0,video.indexOf(".")))
         path=path.substr(0,i)
-        if(folders[path]){
-            if(folders[path][video]){
-                path=path+"/"+folders[path][video].name
-                fs.stat(__dirname+path, function(err, stats) {
-                    if (err) {
-                        if (err.code === 'ENOENT') {
-                            // 404 Error if file not found
-                            res.writeHead(404, {"Content-Type": "text/html"});
-                            res.write("<h1 align='center'>404 Not Found</h1>");
+        if(folders[path] && folders[path][video]){
+            path=path+"/"+folders[path][video].name
+            fs.stat(__dirname+path, function(err, stats) {
+                if (err) {
+                    if (err.code === 'ENOENT') {
+                        // 404 Error if file not found
+                        res.writeHead(404, {"Content-Type": "text/html"});
+                        res.write("<h1 align='center'>404 Not Found</h1>");
+                        res.end();
+                    }
+                }
+                else{
+                    var range = req.headers.range;
+                    if (!range) {
+                        var file=fs.readFile(__dirname+path,(err,data)=>{
+                            res.writeHead(200, {"Content-Type": "video/mp4","Content-Length":Buffer.byteLength(data)});
+                            res.write(data);
                             res.end();
-                        }
+                        })
                     }
                     else{
-                        var range = req.headers.range;
-                        if (!range) {
-                            var file=fs.readFile(__dirname+path,(err,data)=>{
-                                res.writeHead(200, {"Content-Type": "video/mp4","Content-Length":Buffer.byteLength(data)});
-                                res.write(data);
-                                res.end();
-                            })
+                        var positions = range.replace(/bytes=/, "").split("-");
+                        var start = parseInt(positions[0], 10);
+                        var total = stats.size;
+                        var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+                        var chunksize = (end - start) + 1;
+                        if(start>end){
+                            // 416 Wrong range
+                            console.log(path)
+                            console.log(range)
+                            res.writeHead(416, {"Content-Type": "text/html"});
+                            res.write("<h1 align='center'>416 Wrong range</h1>");
+                            res.end();
                         }
                         else{
-                            var positions = range.replace(/bytes=/, "").split("-");
-                            var start = parseInt(positions[0], 10);
-                            var total = stats.size;
-                            var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
-                            var chunksize = (end - start) + 1;
-                            if(start>end){
-                                // 416 Wrong range
-                                console.log(path)
-                                console.log(range)
-                                res.writeHead(416, {"Content-Type": "text/html"});
-                                res.write("<h1 align='center'>416 Wrong range</h1>");
-                                res.end();
-                            }
-                            else{
-                                res.writeHead(206, {
-                                    "Content-Range": "bytes " + start + "-" + end + "/" + total,
-                                    "Accept-Ranges": "bytes",
-                                    "Content-Length": chunksize,
-                                    "Content-Type": "video/mp4"
+                            res.writeHead(206, {
+                                "Content-Range": "bytes " + start + "-" + end + "/" + total,
+                                "Accept-Ranges": "bytes",
+                                "Content-Length": chunksize,
+                                "Content-Type": "video/mp4"
+                            });
+                            var stream = fs.createReadStream(__dirname+path, { start: start, end: end })
+                                .on("open", function() {
+                                    stream.pipe(res);
+                                }).on("error", function(err) {
+                                    console.log(err)
+                                    res.end(err);
                                 });
-                                var stream = fs.createReadStream(__dirname+path, { start: start, end: end })
-                                    .on("open", function() {
-                                        stream.pipe(res);
-                                    }).on("error", function(err) {
-                                        console.log(err)
-                                        res.end(err);
-                                    });
-                            }
-
                         }
+
                     }
-                });
-            }
-            else{
-                console.log(path+"/"+video)
-                res.writeHead(404, {"Content-Type": "text/html"});
-                res.write("<h1 align='center'>404 Not Found</h1>");
-                res.end();
-            }
+                }
+            });
         }
         else{
-            console.log(path)
+            if(folders[path])
+                console.log(path+"/"+video)
+            else
+                console.log(path)
             res.writeHead(404, {"Content-Type": "text/html"});
             res.write("<h1 align='center'>404 Not Found</h1>");
             res.end();
