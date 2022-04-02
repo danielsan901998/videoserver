@@ -68,24 +68,24 @@ function fullscreen() {
  }
 }
 function capture() {
-	var video = document.getElementById('video');
-	if(video.videoWidth){
-		document.body.append(document.createElement("canvas"))
-		var canvas = document.getElementsByTagName('canvas')[0];     
-		canvas.width = video.videoWidth;
-		canvas.height = video.videoHeight;
-		canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);  
-		canvas.toBlob(blob => {
-		  var img = new Image();
-		  img.src = window.URL.createObjectURL(blob);
-		  img.sizes=video.videoWidth+"x"+video.videoHeight;
-		  navigator.mediaSession.metadata = new MediaMetadata({
-		   title: dir.children[track].innerText,
-		   artwork: [img]
-		  });
-		});
-		canvas.remove()
-	}
+ var video = document.getElementById('video');
+ if(video.videoWidth){
+  document.body.append(document.createElement("canvas"))
+  var canvas = document.getElementsByTagName('canvas')[0];     
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);  
+  canvas.toBlob(blob => {
+    var img = new Image();
+    img.src = window.URL.createObjectURL(blob);
+    img.sizes=video.videoWidth+"x"+video.videoHeight;
+    navigator.mediaSession.metadata = new MediaMetadata({
+     title: dir.children[track].innerText,
+     artwork: [img]
+    });
+  });
+  canvas.remove()
+ }
 }
 speed(input.value);
 //listeners
@@ -109,6 +109,7 @@ sumar.addEventListener('click', function (evt) {
  video.currentTime=video.currentTime+5
 });
 descargar.addEventListener('click', function (evt) {
+ var paused = video.paused;
  descargar.disabled=true
  var xhr = new XMLHttpRequest();
  xhr.open('GET', video.src, true);
@@ -123,6 +124,7 @@ descargar.addEventListener('click', function (evt) {
    video.src = vid;
    descargar.disabled=false
    descargar.textContent="Descargar";
+   if(paused) video.pause()
    video.currentTime=time;
    speed(input.value)
   }
