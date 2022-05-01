@@ -210,14 +210,13 @@ if ('mediaSession' in navigator) {
  });
 }
 //mobile
-if(navigator.userAgent.indexOf("Android")>-1){
+if(window.innerHeight>window.innerWidth){
  var css=`
 video{
  width: 100%;
 }`;
- var head = document.head || document.getElementsByTagName('head')[0];
  var style = document.createElement('style');
- head.appendChild(style);
+ document.head.appendChild(style);
  style.appendChild(document.createTextNode(css));
  video.controls=true
 }
@@ -245,16 +244,13 @@ video{
  style.appendChild(document.createTextNode(css));
 }
 window.screen.orientation.addEventListener('change', function() {
- if(document.fullscreenElement){
-  if (window.matchMedia("(orientation: landscape)").matches) {
+if(document.fullscreen){
+  if (window.innerHeight<window.innerWidth)
    document.exitFullscreen();
-  }
  }
- else{
-  if (window.matchMedia("(orientation: portrait)").matches) {
-   video.requestFullscreen();
-  }
- }
+ else
+  if (window.innerHeight>window.innerWidth)
+   video.requestFullscreen().catch(()=>{});
 });
 </script>
 </body>
