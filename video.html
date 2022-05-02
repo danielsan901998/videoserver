@@ -245,12 +245,12 @@ video{
 }
 window.screen.orientation.addEventListener('change', function() {
 if(document.fullscreen){
-  if (window.innerHeight<window.innerWidth)
-   document.exitFullscreen();
- }
- else
   if (window.innerHeight>window.innerWidth)
    video.requestFullscreen().catch(()=>{});
+ }
+ else
+  if (window.innerHeight<window.innerWidth)
+   document.exitFullscreen();
 });
 </script>
 </body>
