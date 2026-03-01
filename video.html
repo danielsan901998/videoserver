@@ -48,7 +48,6 @@ function speed(valor) {
 function next(i){
  track=track+i
  if(track<0)track=0
- location.hash=track
  video.src=location.origin+location.pathname+"/"+track+".mp4"
  speed(input.value)
  video.play()
@@ -85,6 +84,10 @@ function capture() {
     });
   });
   canvas.remove()
+ }else{
+	navigator.mediaSession.metadata = new MediaMetadata({
+	 title: dir.children[track].innerText,
+	});
  }
 }
 speed(input.value);
@@ -137,7 +140,6 @@ dir.addEventListener('click', function (ev) {
  var num=href.substring(href.lastIndexOf("/")+1)
  num=num.substring(0,num.lastIndexOf(".mp4"))
  track=parseInt(num)
- location.hash=num
  video.setAttribute("src",href)
  speed(input.value)
  if ('mediaSession' in navigator) {
@@ -147,21 +149,6 @@ dir.addEventListener('click', function (ev) {
   });
  }
 });
-window.onpopstate = function(event) {
- var href=location.hash.substr(1)
- if(href=="")href="0"
- track=parseInt(href)
- var src=video.src
- var url=src.substring(0,src.lastIndexOf("/")+1)
- video.setAttribute("src",url+href+".mp4")
- speed(input.value)
- if ('mediaSession' in navigator) {
-  setTimeout(capture,1000);
-  navigator.mediaSession.metadata = new MediaMetadata({
-   title: dir.children[track].innerText
-  });
- }
-};
 window.onkeydown = function(e) {
  switch(e.keyCode){
   case 32: //espacio
@@ -243,14 +230,18 @@ video{
  head.appendChild(style);
  style.appendChild(document.createTextNode(css));
 }
-window.screen.orientation.addEventListener('change', function() {
-if(document.fullscreen){
-  if (window.innerHeight>window.innerWidth)
-   document.exitFullscreen();
- }
- else
-  if (window.innerHeight<window.innerWidth)
-   video.requestFullscreen().catch(()=>{});
+video.addEventListener('loadedmetadata', () => {
+	if (video.videoWidth > 0 && video.videoHeight > 0) {
+		window.screen.orientation.addEventListener('change', function() {
+		if(document.fullscreen){
+			if (window.innerHeight>window.innerWidth)
+			 document.exitFullscreen();
+		 }
+		 else
+			if (window.innerHeight<window.innerWidth)
+			 video.requestFullscreen().catch(()=>{});
+		});
+  }
 });
 </script>
 </body>
