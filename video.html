@@ -16,6 +16,11 @@
     background-color: black;
     color: white;
   }
+  #dir li.active {
+    background-color: #333;
+    color: #0ff;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
@@ -46,17 +51,18 @@ function speed(valor) {
  video.playbackRate=valor
 }
 function next(i){
- track=track+i
- if(track<0)track=0
- video.src=location.origin+location.pathname+"/"+track+".mp4"
- speed(input.value)
- video.play()
- if ('mediaSession' in navigator) {
-  setTimeout(capture,1000);
-  navigator.mediaSession.metadata = new MediaMetadata({
-   title: dir.children[track].innerText
-  });
- }
+  track=track+i
+  if(track<0)track=0
+  video.src=location.origin+location.pathname+"/"+track+".mp4"
+  speed(input.value)
+  video.play()
+  updateActive()
+  if ('mediaSession' in navigator) {
+   setTimeout(capture,1000);
+   navigator.mediaSession.metadata = new MediaMetadata({
+    title: dir.children[track].innerText
+   });
+  }
 }
 function fullscreen() {
  if(document.fullscreenElement){
@@ -91,6 +97,15 @@ function capture() {
  }
 }
 speed(input.value);
+function updateActive() {
+  for (let i = 0; i < dir.children.length; i++) {
+    dir.children[i].classList.remove('active');
+  }
+  if (dir.children[track]) {
+    dir.children[track].classList.add('active');
+  }
+}
+updateActive();
 //listeners
 video.onclick = event => {if (event.detail === 2) fullscreen()}
 video.onended = function() {
@@ -143,11 +158,12 @@ dir.addEventListener('click', function (ev) {
  video.setAttribute("src",href)
  speed(input.value)
  if ('mediaSession' in navigator) {
-  setTimeout(capture,1000);
-  navigator.mediaSession.metadata = new MediaMetadata({
-   title: dir.children[track].innerText
-  });
- }
+   setTimeout(capture,1000);
+   navigator.mediaSession.metadata = new MediaMetadata({
+    title: dir.children[track].innerText
+   });
+  }
+  updateActive();
 });
 window.onkeydown = function(e) {
  switch(e.keyCode){
